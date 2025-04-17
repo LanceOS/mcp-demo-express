@@ -12,25 +12,22 @@ export async function POST({ request }) {
     })
 
     if (!client || !body) return;
+    console.log(body.newData)
 
     try {
-        // Transform previousData to the correct format with string content
-        const formattedMessages = body.previousData.map(msg => ({
+        const formattedMessages = body.messages.map(msg => ({
             role: msg.sender === 'bot' ? 'assistant' : 'user',
-            content: String(msg.text) // Ensure content is a string
+            content: String(msg.text)
         }));
-
-        // Add the new message
-        formattedMessages.push({
-            role: 'user',
-            content: String(body.newData) // Ensure content is a string
-        });
 
         const message = await client.messages.create({
             max_tokens: 1024,
             system: `
                 You are going to parse incoming data and summarize it into an easy to understand
-                and readable format for the user to read. 
+                and readable format for the user to read.
+
+                Here is the imported data:
+                ${body.newData}
             `,
             messages: formattedMessages,
             model: 'claude-3-haiku-20240307',

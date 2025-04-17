@@ -3,7 +3,7 @@
 	import MCPClient from '$lib/mcp/Client';
 	import ClaudeClient from '$lib/ai/Claude';
 
-	let messages: Array<{ id: number; text: string; sender: 'user' | 'bot' }> = [];
+	let messages: Array<{ id: number; content: string; role: 'user' | 'bot' }> = [];
 	let inputText = '';
 	let messageId = 0;
 	let tools = {};
@@ -16,11 +16,11 @@
 		if (inputText.trim() === '') return;
 
 		// Add user message
-		messages = [...messages, { id: messageId++, text: inputText, sender: 'user' }];
+		messages = [...messages, { id: messageId++, content: inputText, role: 'user' }];
 		const currentInput = inputText;
 		inputText = '';
 
-		const claudeResponse = await claude.createMessage(currentInput, tools);
+		const claudeResponse = await claude.createMessage(messages, tools);
 
 		if (claudeResponse.type === 'tool_use') {
 			const toolName = claudeResponse.name;
@@ -36,12 +36,12 @@
 			/**
 			 * If there is a small amount of tool data then send it straight to claude.
 			 */
-
+			console.log(messages);
 			const toolResponse = await claude.parseResponse(messages, toolData);
 			console.log(toolResponse);
-			messages = [...messages, { id: messageId++, text: toolResponse.text, sender: 'bot' }];
+			messages = [...messages, { id: messageId++, content: toolResponse.text, role: 'bot' }];
 		} else {
-			messages = [...messages, { id: messageId++, text: claudeResponse.text, sender: 'bot' }];
+			messages = [...messages, { id: messageId++, content: claudeResponse.text, role: 'bot' }];
 		}
 	}
 
@@ -66,7 +66,7 @@
 		/**
 		 * Greeting Message
 		 */
-		messages = [{ id: messageId++, text: response.text, sender: 'bot' }];
+		messages = [{ id: messageId++, content: response.text, role: 'bot' }];
 	});
 </script>
 
@@ -79,11 +79,11 @@
 		<!-- Messages container -->
 		<div class="flex-1 space-y-4 overflow-y-auto p-4">
 			{#each messages as message}
-				<div class="flex {message.sender === 'user' ? 'justify-end' : 'justify-start'}">
+				<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
 					<div
-						class={`max-w-3/4 rounded-lg px-4 py-2 ${message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'}`}
+						class={`max-w-3/4 rounded-lg px-4 py-2 ${message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'}`}
 					>
-						{message.text}
+						{message.content}
 					</div>
 				</div>
 			{/each}

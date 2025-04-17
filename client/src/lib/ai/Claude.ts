@@ -29,14 +29,14 @@ class ClaudeClient {
         }
     }
 
-    async createMessage(input: string, tools?: object) {
+    async createMessage(messages: object[], tools?: object) {
         try {
             const response = await fetch("/api/claude/create", {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: input, tools: tools })
+                body: JSON.stringify({ messages: messages, tools: tools })
             })
             const data = await response.json()
             return data.data;
@@ -54,7 +54,7 @@ class ClaudeClient {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ previousData: input, newData: toolData })
+                body: JSON.stringify({ messages: input, newData: toolData })
             })
             const data = await response.json()
             return data.data;
