@@ -11,8 +11,11 @@ export async function POST({ request }) {
         apiKey: CLAUDE_API
     })
 
+
     if (!client || !body) return;
-    console.log(body.newData)
+
+    const stringifyNew = JSON.stringify(body.newData)
+    console.log(stringifyNew)
 
     try {
         const formattedMessages = body.messages.map(msg => ({
@@ -27,7 +30,7 @@ export async function POST({ request }) {
                 and readable format for the user to read.
 
                 Here is the imported data:
-                ${body.newData}
+                ${stringifyNew}
             `,
             messages: formattedMessages,
             model: 'claude-3-haiku-20240307',
