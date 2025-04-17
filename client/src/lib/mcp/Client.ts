@@ -19,7 +19,7 @@ class MCPClient {
      * Creating new Client
      */
     client = new Client({
-        name: "example-client",
+        name: "Demo",
         version: "1.0.0"
     })
 
@@ -31,6 +31,10 @@ class MCPClient {
             await this.client.connect(transport);
             console.log("Connected to MCP server.");
 
+            /**
+             * This calls the tools list by sending a request to the MCP using the tools/list request.
+             * The MCP server response with the available tools
+             */
             const tools = await this.client.listTools()
             console.log("Tools from server:", tools)
 

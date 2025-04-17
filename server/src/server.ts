@@ -3,13 +3,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk"
+import cors from 'cors';
 import "dotenv/config"
-
-
-
-const client = new Anthropic({
-    apiKey: process.env.CLAUDE_API
-})
 
 /**
  * Defines mcp server
@@ -28,6 +23,7 @@ const server = new McpServer({
 });
 
 const app = express();
+app.use(cors())
 
 
 /**
