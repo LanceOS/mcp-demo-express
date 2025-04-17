@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import MCPClient from '$lib/mcp/Client';
+	import ClaudeClient from '$lib/ai/Claude';
 
 	let messages: Array<{ id: number; text: string; sender: 'user' | 'bot' }> = [];
 	let inputText = '';
@@ -13,14 +14,6 @@
 		messages = [...messages, { id: messageId++, text: inputText, sender: 'user' }];
 		const currentInput = inputText;
 		inputText = '';
-
-		// Simulate bot response (replace with your actual MCP client integration)
-		setTimeout(() => {
-			messages = [
-				...messages,
-				{ id: messageId++, text: `This is a response to: "${currentInput}"`, sender: 'bot' }
-			];
-		}, 500);
 	}
 
 	function handleKeyPress(e: KeyboardEvent) {
@@ -35,14 +28,16 @@
 	 * interacts with the ai assistant. Once the user is done interacting you would disconnect
 	 * the user.
 	 */
-	onMount(() => {
+	onMount(async () => {
 		const mcp = new MCPClient();
 		mcp.runClient();
 
+		// const response = await claude.initiate();
+		// console.log(response);
 		/**
 		 * Greeting Message
 		 */
-		messages = [{ id: messageId++, text: 'Hello! How can I help you today?', sender: 'bot' }];
+		messages = [{ id: messageId++, text: response.text, sender: 'bot' }];
 	});
 </script>
 

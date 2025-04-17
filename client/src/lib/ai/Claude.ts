@@ -1,5 +1,4 @@
-import { CLAUDE_API } from '$env/static/private';
-import Anthropic from '@anthropic-ai/sdk';
+
 
 
 class ClaudeClient {
@@ -10,39 +9,33 @@ class ClaudeClient {
         this.instance = this;
     }
 
-    client = new Anthropic({
-        apiKey: CLAUDE_API
-    })
 
-    async initiate(input: string) {
+    async initiate() {
         try {
-            const message = await this.client.messages.create({
-                max_tokens: 1024,
-                messages: [{ role: 'user', content: input }],
-                model: 'claude-3-5-sonnet-latest',
-            });
-
-            return message
+            const response = await fetch("/api/claude/initiate", {
+                method: "POST",
+            })
+            const data = await response.json()
+            return data.data;
         }
         catch (error) {
             if (!error) return error
-            throw new Error("Failed to initiate claude:", error)
+            throw new Error(`Failed to initiate Claude: ${error.message}`);
         }
     }
 
     async createMessage(input: string) {
         try {
-            const message = await this.client.messages.create({
-                max_tokens: 1024,
-                messages: [{ role: 'user', content: input }],
-                model: 'claude-3-5-sonnet-latest',
-            });
-
-            return message
+            const response = await fetch("/api/claude/create", {
+                method: "POST",
+                body: input
+            })
+            const data = await response.json()
+            return data.data;
         }
         catch (error) {
             if (!error) return;
-            throw new Error("Failed to create message:", error)
+            throw new Error(`Failed to create new message: ${error.message}`);
         }
     }
 }
