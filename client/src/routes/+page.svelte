@@ -39,7 +39,9 @@
 		const mcp = new MCPClient();
 		mcp.runClient();
 
-		// Optional welcome message
+		/**
+		 * Greeting Message
+		 */
 		messages = [{ id: messageId++, text: 'Hello! How can I help you today?', sender: 'bot' }];
 	});
 </script>

@@ -63,13 +63,13 @@ app.listen(7000, () => {
  * Then the async (args) is the function that executes the tool
  */
 server.tool("get_distribution_data",
-    { description: "Retrieves and provides information about partner distribution data based on the user's query.", userInput: z.string() },
+    { description: "Retrieves and provides information about partner distribution data based on the user's query." },
     async (args) => {
         try {
             const response = await fetch(process.env.API_BASE, {
                 method: "GET",
                 headers: {
-                    "X-API-Token": process.env.PARTNER_ID
+                    "X-API-Key": process.env.PARTNER_ID
                 }
             })
 
