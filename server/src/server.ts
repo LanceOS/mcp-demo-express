@@ -6,6 +6,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import "dotenv/config"
 
 
+
 const client = new Anthropic({
     apiKey: process.env.CLAUDE_API
 })
@@ -16,6 +17,14 @@ const client = new Anthropic({
 const server = new McpServer({
     name: "My Server",
     version: "1.0.0",
+    capabilities: {
+        tools: {
+            /**
+             * Server will emit notifications if the list of tools change
+             */
+            listChanged: true
+        }
+    }
 });
 
 const app = express();
@@ -47,15 +56,18 @@ app.post("/messages", async (req: Request, res: Response) => {
     }
 });
 
-app.listen(3001);
+
+app.listen(7000, () => {
+    console.log("Listening on port 7000")
+});
 
 /**
  * Server tool
  * First define its name and then an object that includes its params
  * Then the async (args) is the function that executes the tool
  */
-server.tool("Get-distribution-data",
-    { userInput: z.string() },
+server.tool("get_distribution_data",
+    { description: "Retrieves and provides information about partner distribution data based on the user's query.", userInput: z.string() },
     async (args) => {
         try {
             const response = await fetch(process.env.API_BASE, {
@@ -67,31 +79,7 @@ server.tool("Get-distribution-data",
 
             const data = await response.json()
             console.log(data)
-            const message = await client.messages
-                .create({
-                    model: 'claude-3-5-sonnet-latest',
-                    max_tokens: 1024,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `
-                                You are an assistant tasked with fetching partner distribution data. Your task
-                                is to use the information from the dashboard to help the user with their questions about
-                                distribution data.
-
-                                Here is the current data:
-                                ${JSON.stringify(data)}
-
-
-                                User query:
-                                ${args.userInput}
-
-                                Provide detailed and well structured responses that addresses the user's queries.
-                            `
-                        }
-                    ],
-                })
-            return message;
+            return data
         }
         catch (err) {
             return {
