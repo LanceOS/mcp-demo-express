@@ -62,11 +62,16 @@ app.listen(7000, () => {
  * First define its name and then an object that includes its params
  * Then the async (args) is the function that executes the tool
  */
-server.tool("get_distribution_data",
-    { description: "Retrieves and provides information about partner distribution data based on the user's query." },
+server.tool("get_distribution_data", "Retrieves and provides information about partner distribution data based on the provided start and end dates.",
+    {
+        start_date: z.string(),
+        end_date: z.string()
+    },
     async (args) => {
+        console.log(args)
         try {
-            const response = await fetch(process.env.API_BASE, {
+            const apiUrlWithParams = `${process.env.API_BASE}?start_date=${args.start_date}&end_date=${args.end_date}`;
+            const response = await fetch(apiUrlWithParams, {
                 method: "GET",
                 headers: {
                     "X-API-Key": process.env.PARTNER_ID
@@ -74,8 +79,15 @@ server.tool("get_distribution_data",
             })
 
             const data = await response.json()
-            console.log(data)
-            return data
+
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(data.results),
+                    },
+                ],
+            }
         }
         catch (err) {
             return {

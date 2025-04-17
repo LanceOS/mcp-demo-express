@@ -10,10 +10,15 @@ class ClaudeClient {
     }
 
 
-    async initiate() {
+    async initiate(tools: object) {
+
         try {
             const response = await fetch("/api/claude/initiate", {
                 method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tools)
             })
             const data = await response.json()
             return data.data;
@@ -24,11 +29,32 @@ class ClaudeClient {
         }
     }
 
-    async createMessage(input: string) {
+    async createMessage(input: string, tools?: object) {
         try {
             const response = await fetch("/api/claude/create", {
                 method: "POST",
-                body: input
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: input, tools: tools })
+            })
+            const data = await response.json()
+            return data.data;
+        }
+        catch (error) {
+            if (!error) return;
+            throw new Error(`Failed to create new message: ${error.message}`);
+        }
+    }
+
+    async parseResponse(input: object[], toolData: string) {
+        try {
+            const response = await fetch("/api/claude/parse", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ previousData: input, newData: toolData })
             })
             const data = await response.json()
             return data.data;

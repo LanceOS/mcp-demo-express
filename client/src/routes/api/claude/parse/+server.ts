@@ -14,23 +14,26 @@ export async function POST({ request }) {
     if (!client || !body) return;
 
     try {
+        // Transform previousData to the correct format with string content
+        const formattedMessages = body.previousData.map(msg => ({
+            role: msg.sender === 'bot' ? 'assistant' : 'user',
+            content: String(msg.text) // Ensure content is a string
+        }));
+
+        // Add the new message
+        formattedMessages.push({
+            role: 'user',
+            content: String(body.newData) // Ensure content is a string
+        });
+
         const message = await client.messages.create({
             max_tokens: 1024,
-            /**
-             * Specific dates do not need to be given as long as the quarter and year are mentioned,
-             * claude will autoformat the dates into parameters.
-             */
             system: `
-                If user makes a request use the appropriate tool.
-                All dates given must be in the ISO 8601 format. If the user does provide a direct ISO format, convert it to one.
-                For instance Q1  to Q2, grab the first day of Q1 and Q2 and make those ISO formats.
+                You are going to parse incoming data and summarize it into an easy to understand
+                and readable format for the user to read. 
             `,
-            messages: [{ role: 'user', content: body.message }],
+            messages: formattedMessages,
             model: 'claude-3-haiku-20240307',
-            /**
-             * tool sent to claude should be stringified
-             */
-            tools: body?.tools
         });
 
         return new Response(JSON.stringify({ data: message.content[0] }), {

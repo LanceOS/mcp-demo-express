@@ -6,14 +6,43 @@
 	let messages: Array<{ id: number; text: string; sender: 'user' | 'bot' }> = [];
 	let inputText = '';
 	let messageId = 0;
+	let tools = {};
 
-	function sendMessage() {
+	const mcp = new MCPClient();
+
+	const claude = new ClaudeClient();
+
+	async function sendMessage() {
 		if (inputText.trim() === '') return;
 
 		// Add user message
 		messages = [...messages, { id: messageId++, text: inputText, sender: 'user' }];
 		const currentInput = inputText;
 		inputText = '';
+
+		const claudeResponse = await claude.createMessage(currentInput, tools);
+
+		if (claudeResponse.type === 'tool_use') {
+			const toolName = claudeResponse.name;
+			const toolArgs = claudeResponse.input as { [x: string]: unknown } | undefined;
+
+			const response = await mcp.useTool(toolName, toolArgs);
+
+			/**
+			 * All data is contained within the first item of the context array
+			 */
+			const toolData = JSON.parse(response.content[0].text);
+			console.log(toolData);
+			/**
+			 * If there is a small amount of tool data then send it straight to claude.
+			 */
+
+			const toolResponse = await claude.parseResponse(messages, toolData);
+			console.log(toolResponse);
+			messages = [...messages, { id: messageId++, text: toolResponse.text, sender: 'bot' }];
+		} else {
+			messages = [...messages, { id: messageId++, text: claudeResponse.text, sender: 'bot' }];
+		}
 	}
 
 	function handleKeyPress(e: KeyboardEvent) {
@@ -29,11 +58,11 @@
 	 * the user.
 	 */
 	onMount(async () => {
-		const mcp = new MCPClient();
-		mcp.runClient();
+		await mcp.runClient();
+		tools = await mcp.getTools();
 
-		// const response = await claude.initiate();
-		// console.log(response);
+		const response = await claude.initiate(tools);
+
 		/**
 		 * Greeting Message
 		 */
@@ -42,7 +71,7 @@
 </script>
 
 <main class="mx-auto flex h-dvh max-w-7xl flex-col gap-6 px-4 py-8">
-	<h1 class="text-4xl font-bold text-gray-800">AI Chat Assistance</h1>
+	<h1 class="text-4xl font-bold text-gray-800">AI Chat Assistance MCP Demo</h1>
 
 	<div
 		class="flex flex-1 flex-col gap-4 overflow-hidden rounded-lg border-2 border-gray-200 bg-white shadow-sm"
